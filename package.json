@@ -1,24 +1,27 @@
 {
   "name": "@time-with/popup",
-  "version": "1.0.5",
+  "version": "1.1.0",
   "description": "React redux-driven Popup system",
   "main": "dist/index.js",
   "license": "MIT",
-  "author": "Antonio Brandao <antonio.brandao@trinitymirror.com>",
+  "author": "Antonio Brandao <antonio.brandao@timewith.co.uk>",
   "scripts": {
-    "prepack": "yarn && babel src --out-dir dist --source-maps --presets es2015,stage-0,react && rm -rf node_modules",
+    "prepack": "yarn && ./node_modules/babel-cli/bin/babel src --out-dir dist --source-maps --presets es2015,stage-0,react && rm -rf node_modules",
     "postpack": "rm -rf node_modules"
   },
   "dependencies": {
+    "@fortawesome/fontawesome": "^1.1.8",
+    "@fortawesome/fontawesome-svg-core": "^1.2.0",
+    "@fortawesome/react-fontawesome": "^0.1.0",
     "@time-with/media-queries": "^1.0.3",
     "babel-preset-stage-0": "^6.24.1",
     "glamorous": "^4.11.6",
     "react": "^16.1.1",
     "react-custom-scrollbars": "^4.2.1",
-    "react-fontawesome": "^1.6.1",
     "react-redux": "^5.0.6"
   },
   "devDependencies": {
+    "babel-cli": "^6.26.0",
     "babel-preset-es2015": "^6.24.1",
     "babel-preset-react": "^6.24.1",
     "babel-preset-stage-0": "^6.24.1"

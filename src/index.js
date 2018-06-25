@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
-import FontAwesome from 'react-fontawesome'
+import FontAwesome from '@fortawesome/react-fontawesome'
+import { faTimes } from '@fortawesome/fontawesome-pro-regular'
 import glamorous from 'glamorous'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux';
@@ -21,14 +22,20 @@ class TWPopup extends Component {
         const newMarginTop = (windowHeight - popupContentHeight) / 2
         const newMarginTopCompensation = newMarginTop / 8
         contentDiv.style.marginTop = `${newMarginTop - newMarginTopCompensation}px`
+      } else {
+        contentDiv.style.marginTop = '0px'
       }
     }
     contentDiv.style.opacity = '1'
   }
 
+  componentDidMount() {
+    window.addEventListener('resize', () => this.adjustViewport())
+  }
+
   render() {
     const { content } = this.props
-    
+
     if (!content) { return null }
 
     setTimeout(() => this.adjustViewport(), 1)
@@ -38,7 +45,7 @@ class TWPopup extends Component {
           <Scrollbars autoHeight autoHeightMin={300} autoHeightMax={window.innerHeight} id='quick-confirm-scrollbars' style={ scrollBarsStyle }>
             <CloseDIV onClick={this.handleClosePopup}>
               <CloseP>close</CloseP>
-              <FontAwesome name='close' display={closeIconStyle}/>
+              <FontAwesome icon={faTimes} display={closeIconStyle}/>
             </CloseDIV>
             <ContentContainerDIV>
               { content }
@@ -110,7 +117,7 @@ export default connect( mapStoreToProps, mapDispatchToProps )( TWPopup )
 // dom elements
 
 
-const scrollBarsStyle = { 
+const scrollBarsStyle = {
   width: '100%',
   margin: '0 auto',
 }
@@ -119,7 +126,7 @@ const ContentContainerDIV = glamorous.div({
   padding: '30px',
   paddingTop: '0',
   [tablet_max]: {
-    padding: '26px', 
+    padding: '26px',
     paddingTop: '0',
   },
   [phablet_max]: {
@@ -148,7 +155,7 @@ const ContentDIV = glamorous.div({
   maxWidth: '630px',
   position: 'relative',
   paddingTop: '0px',
-  paddingBottom: '0px', 
+  paddingBottom: '0px',
   margin: '0 auto',
   display: 'block',
   background: 'white',
@@ -164,8 +171,10 @@ const CloseDIV = glamorous.div({
   textAlign: 'right',
   paddingRight: '7px',
   paddingTop: '7px',
-  '& .fa': {
+  '& .svg-inline--fa': {
     marginLeft: '10px',
+    marginRight: '10px',
+    marginTop: '1px',
     color: '#63C1E8',
     fontSize: '26px',
   }
