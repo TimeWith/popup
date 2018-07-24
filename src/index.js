@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import glamorous from 'glamorous'
+import styled from 'react-emotion'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux';
 import { tablet_max, phablet_max, phone_max } from '@time-with/media-queries'
@@ -23,8 +23,8 @@ class TWPopup extends Component {
       } else {
         contentDiv.style.marginTop = '0px'
       }
+      contentDiv.style.opacity = '1'
     }
-    contentDiv.style.opacity = '1'
   }
 
   componentDidMount() {
@@ -120,7 +120,7 @@ const scrollBarsStyle = {
   margin: '0 auto',
 }
 
-const ContentContainerDIV = glamorous.div({
+const ContentContainerDIV = styled.div({
   padding: '30px',
   paddingTop: '0',
   [tablet_max]: {
@@ -137,7 +137,7 @@ const ContentContainerDIV = glamorous.div({
   }
 })
 
-const RootDIV = glamorous.div({
+const RootDIV = styled.div({
   zIndex: '200',
   width: '100%',
   height: '100%',
@@ -146,7 +146,7 @@ const RootDIV = glamorous.div({
   left: '0',
 })
 
-const ContentDIV = glamorous.div({
+const ContentDIV = styled.div({
   borderRadius: '3px',
   zIndex: '202',
   padding: '0px',
@@ -163,7 +163,7 @@ const ContentDIV = glamorous.div({
   },
 })
 
-const CloseDIV = glamorous.div({
+const CloseDIV = styled.div({
   cursor: 'pointer',
   width: '100%',
   textAlign: 'right',
@@ -178,7 +178,7 @@ const CloseDIV = glamorous.div({
   }
 })
 
-const BGDIV = glamorous.div({
+const BGDIV = styled.div({
   position: 'absolute',
   zIndex: '201',
   top: '0',
@@ -198,7 +198,7 @@ const closeIconStyle = {
   fill: '#63C1E8',
 }
 
-const CloseP = glamorous.p({
+const CloseP = styled.p({
   display: 'inline-block',
   verticalAlign: 'top',
   fontWeight: 'bold',
