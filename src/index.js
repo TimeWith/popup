@@ -60,23 +60,18 @@ class TWPopup extends Component {
   }
 }
 
-const showPopup = function(content, disableClose) {
+export const showPopup = function(content, disableClose) {
   return {
     type: 'SHOW_POPUP',
     payload: content,
     disableClose: disableClose,
   };
 }
-const closePopup = function() {
+export const closePopup = function() {
   return {
     type: 'CLOSE_POPUP',
     payload: null,
   };
-}
-
-export const popupActions = {
-  showPopup: showPopup,
-  closePopup: closePopup
 }
 
 export function popupReducer(state = {
