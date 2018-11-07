@@ -32,7 +32,7 @@ class TWPopup extends Component {
   }
 
   render() {
-    const { content } = this.props
+    const { content, disableClose } = this.props
 
     if (!content) { return null }
 
@@ -41,10 +41,12 @@ class TWPopup extends Component {
       <RootDIV id='popup-window'>
         <ContentDIV id='popup-content-div' style={{opacity: 0}}>
           <Scrollbars autoHeight autoHeightMin={300} autoHeightMax={window.innerHeight} id='quick-confirm-scrollbars' style={ scrollBarsStyle }>
-            <CloseDIV onClick={this.handleClosePopup}>
-              <CloseP>close</CloseP>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512" style={closeIconStyle}><path d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"/></svg>
-            </CloseDIV>
+            { !disableClose &&
+              <CloseDIV onClick={this.handleClosePopup}>
+                <CloseP>close</CloseP>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512" style={closeIconStyle}><path d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"/></svg>
+              </CloseDIV>
+            }
             <ContentContainerDIV>
               { content }
             </ContentContainerDIV>
@@ -56,10 +58,11 @@ class TWPopup extends Component {
   }
 }
 
-const showPopup = function(content) {
+const showPopup = function(content, disableClose) {
   return {
     type: 'SHOW_POPUP',
     payload: content,
+    disableClose: disableClose,
   };
 }
 const closePopup = function() {
@@ -76,6 +79,7 @@ export const popupActions = {
 
 export function popupReducer(state = {
   content: null,
+  disableClose: false,
 }, action) {
   switch (action.type) {
     case 'SHOW_POPUP': {
@@ -100,6 +104,7 @@ export function popupReducer(state = {
 const mapStoreToProps = ( store ) => {
   return {
     content: store.popupReducer.content,
+    disableClose: store.popupReducer.disableClose,
   }
 }
 
