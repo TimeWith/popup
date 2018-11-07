@@ -8,7 +8,9 @@ import { Scrollbars } from 'react-custom-scrollbars'
 class TWPopup extends Component {
 
   handleClosePopup = () => {
-    this.props.closePopup()
+    if (!this.props.disableClose) {
+      this.props.closePopup()
+    }
   }
 
   adjustViewport() {
@@ -86,12 +88,14 @@ export function popupReducer(state = {
       return {
         ...state,
         content: action.payload,
+        disableClose: action.disableClose,
       };
     }
     case 'CLOSE_POPUP': {
       return {
         ...state,
         content: null,
+        disableClose: false,
       };
     }
     default:
