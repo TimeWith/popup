@@ -38,9 +38,10 @@ class TWPopup extends Component {
     if (contentElement) {
       let closeHeight = 0
       if (closeElement) { closeHeight = closeElement.clientHeight }
+      if (closeElement) { console.log('FOUND CLOSE ELEMENT') }
       const currentContentHeight = contentElement.clientHeight
       const currentContentWidth = contentElement.clientWidth
-      const windowMaxHeight = currentContentHeight > window.innerHeight ? window.innerHeight : (currentContentHeight + closeHeight)
+      const windowMaxHeight = (currentContentHeight + closeHeight) > window.innerHeight ? window.innerHeight : (currentContentHeight + closeHeight)
       const windowMaxWidth = currentContentWidth > window.innerWidth ? window.innerWidth : 'auto'
       const scrollerHeight = (currentContentHeight + closeHeight) > window.innerHeight ? (window.innerHeight - closeHeight) : currentContentHeight
       const scrollerWidth = currentContentWidth > window.innerWidth ? window.innerWidth : currentContentWidth
@@ -68,24 +69,28 @@ class TWPopup extends Component {
     // TWPopup never unmounts
   }
 
+  renderClose = () => {
+    console.log('renderClose')
+    return (
+      <CloseDIV id='tw-popup-close-div' onClick={this.handleClosePopup}>
+        <CloseP>close</CloseP>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512" style={closeIconStyle}><path d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"/></svg>
+      </CloseDIV>
+    )
+  }
+
   render() {
     const { active, content, disableClose } = this.props
+    console.log('disableClose:')
+    console.dir(disableClose)
     if (!active || !content) { return null }
     setTimeout(() => this.adjustViewport(), 10)
     return (
       <RootDIV id='tw-popup-root'>
         <Window id='tw-popup-window' style={{ maxWidth: this.state.windowMaxWidth, maxHeight: this.state.windowMaxHeight }}>
-          { !disableClose &&
-            <CloseDIV id='tw-popup-close-div' onClick={this.handleClosePopup}>
-              <CloseP>close</CloseP>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512" style={closeIconStyle}><path d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"/></svg>
-            </CloseDIV>
-          }
+          { !disableClose && this.renderClose() }
           <Scrollbars
-            autoHeight
-            autoHeightMin={100}
-            autoHeightMax={this.state.scrollerHeight}
-            style={{ width: this.state.scrollerWidth }}>
+            style={{ height: this.state.scrollerHeight, width: this.state.scrollerWidth }}>
             <ContentDIV>
               { content }
             </ContentDIV>
@@ -93,7 +98,10 @@ class TWPopup extends Component {
         </Window>
         <BGDIV onClick={this.handleClosePopup} interactive={!disableClose}></BGDIV>
         <Hidden id='tw-popup-hidden-content'>
-          { content }
+          { !disableClose && this.renderClose() }
+          <ContentDIV>
+            { content }
+          </ContentDIV>
         </Hidden>
       </RootDIV>
     )
@@ -200,7 +208,6 @@ const CloseDIV = styled.div({
 
 const ContentDIV = styled.div({
   padding: '30px',
-  paddingTop: '0',
   [tablet_max]: {
     padding: '25px',
   },
@@ -208,7 +215,7 @@ const ContentDIV = styled.div({
     padding: '20px',
   },
   [phone_max]: {
-    padding: '10px',
+    padding: '20px 10px',
   },
 })
 
