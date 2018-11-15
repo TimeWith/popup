@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import styled from 'react-emotion'
+import { LEVEL_POPUP } from 'app-levels'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux';
 import { tablet_max, phablet_max, phone_max } from '@time-with/media-queries'
@@ -7,54 +8,93 @@ import { Scrollbars } from 'react-custom-scrollbars'
 
 class TWPopup extends Component {
 
+  constructor(props) {
+    super(props)
+    this.state = {
+      contentHeight: null,
+      contentWidth: null,
+      windowMaxHeight: null,
+      windowMaxWidth: null,
+      scrollerHeight: null,
+      scrollerWidth: null,
+    }
+  }
+
   handleClosePopup = () => {
     if (!this.props.disableClose) {
       this.props.closePopup()
     }
   }
 
-  adjustViewport() {
-    const contentDiv = document.getElementById('popup-content-div')
-    if (contentDiv) {
-      const windowHeight = window.innerHeight
-      const popupContentHeight = contentDiv.clientHeight
-      if (popupContentHeight < windowHeight) {
-        const newMarginTop = (windowHeight - popupContentHeight) / 2
-        const newMarginTopCompensation = newMarginTop / 8
-        contentDiv.style.marginTop = `${newMarginTop - newMarginTopCompensation}px`
-      } else {
-        contentDiv.style.marginTop = '0px'
+  handleScroll = (e) => {
+    e.stopPropagation()
+    e.preventDefault()
+  }
+
+  adjustViewport = () => {
+    let update = false
+    const contentElement = document.getElementById('tw-popup-hidden-content')
+    const closeElement = document.getElementById('tw-popup-close-div')
+    if (contentElement) {
+      let closeHeight = 0
+      if (closeElement) { closeHeight = closeElement.clientHeight }
+      const currentContentHeight = contentElement.clientHeight
+      const currentContentWidth = contentElement.clientWidth
+      const windowMaxHeight = currentContentHeight > window.innerHeight ? window.innerHeight : (currentContentHeight + closeHeight)
+      const windowMaxWidth = currentContentWidth > window.innerWidth ? window.innerWidth : 'auto'
+      const scrollerHeight = (currentContentHeight + closeHeight) > window.innerHeight ? (window.innerHeight - closeHeight) : currentContentHeight
+      const scrollerWidth = currentContentWidth > window.innerWidth ? window.innerWidth : currentContentWidth
+      if (this.state.windowMaxHeight !== windowMaxHeight
+      || this.state.windowMaxWidth !== windowMaxWidth
+      || this.state.contentHeight !== currentContentHeight
+      || this.state.contentWidth !== currentContentWidth) { update = true }
+
+      if (update) {
+        this.setState({
+          windowMaxHeight: windowMaxHeight,
+          windowMaxWidth: windowMaxWidth,
+          contentHeight: currentContentHeight,
+          contentWidth: currentContentWidth,
+          scrollerHeight: scrollerHeight,
+          scrollerWidth: scrollerWidth,
+        })
       }
-      contentDiv.style.opacity = '1'
     }
   }
 
   componentDidMount() {
-    window.addEventListener('resize', () => this.adjustViewport())
+    window.addEventListener('resize', this.adjustViewport)
+    window.addEventListener('scroll', this.handleScroll)
+    // TWPopup never unmounts
   }
 
   render() {
-    const { content, disableClose } = this.props
-
-    if (!content) { return null }
-
-    setTimeout(() => this.adjustViewport(), 1)
+    const { active, content, disableClose } = this.props
+    if (!active || !content) { return null }
+    setTimeout(() => this.adjustViewport(), 10)
     return (
-      <RootDIV id='popup-window'>
-        <ContentDIV id='popup-content-div' style={{opacity: 0}}>
-          <Scrollbars autoHeight autoHeightMin={300} autoHeightMax={window.innerHeight} id='quick-confirm-scrollbars' style={ scrollBarsStyle }>
-            { !disableClose &&
-              <CloseDIV onClick={this.handleClosePopup}>
-                <CloseP>close</CloseP>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512" style={closeIconStyle}><path d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"/></svg>
-              </CloseDIV>
-            }
-            <ContentContainerDIV>
+      <RootDIV id='tw-popup-root'>
+        <Window id='tw-popup-window' style={{ maxWidth: this.state.windowMaxWidth, maxHeight: this.state.windowMaxHeight }}>
+          { !disableClose &&
+            <CloseDIV id='tw-popup-close-div' onClick={this.handleClosePopup}>
+              <CloseP>close</CloseP>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512" style={closeIconStyle}><path d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"/></svg>
+            </CloseDIV>
+          }
+          <Scrollbars
+            autoHeight
+            autoHeightMin={100}
+            autoHeightMax={this.state.scrollerHeight}
+            style={{ width: this.state.scrollerWidth }}>
+            <ContentDIV>
               { content }
-            </ContentContainerDIV>
+            </ContentDIV>
           </Scrollbars>
-        </ContentDIV>
-        <BGDIV onClick={this.handleClosePopup}></BGDIV>
+        </Window>
+        <BGDIV onClick={this.handleClosePopup} interactive={!disableClose}></BGDIV>
+        <Hidden id='tw-popup-hidden-content'>
+          { content }
+        </Hidden>
       </RootDIV>
     )
   }
@@ -63,33 +103,38 @@ class TWPopup extends Component {
 export const showPopup = function(content, disableClose) {
   return {
     type: 'SHOW_POPUP',
-    payload: content,
+    active: true,
+    content: content,
     disableClose: disableClose,
-  };
+  }
 }
 export const closePopup = function() {
   return {
     type: 'CLOSE_POPUP',
-    payload: null,
-  };
+    active: false,
+  }
 }
 
 export function popupReducer(state = {
   content: null,
+  active: false,
   disableClose: false,
 }, action) {
   switch (action.type) {
     case 'SHOW_POPUP': {
+      document.documentElement.style.overflow = 'hidden'
       return {
         ...state,
-        content: action.payload,
+        active: true,
+        content: action.content,
         disableClose: action.disableClose,
       };
     }
     case 'CLOSE_POPUP': {
+      document.documentElement.style.overflow = 'auto'
       return {
         ...state,
-        content: null,
+        active: false,
         disableClose: false,
       };
     }
@@ -102,6 +147,7 @@ export function popupReducer(state = {
 
 const mapStoreToProps = ( store ) => {
   return {
+    active: store.popupReducer.active,
     content: store.popupReducer.content,
     disableClose: store.popupReducer.disableClose,
   }
@@ -116,55 +162,25 @@ const mapDispatchToProps = dispatch => {
 export default connect( mapStoreToProps, mapDispatchToProps )( TWPopup )
 
 
-// dom elements
-
-
-const scrollBarsStyle = {
-  width: '100%',
-  margin: '0 auto',
-}
-
-const ContentContainerDIV = styled.div({
-  padding: '30px',
-  paddingTop: '0',
-  [tablet_max]: {
-    padding: '26px',
-    paddingTop: '0',
-  },
-  [phablet_max]: {
-    padding: '23px',
-    paddingTop: '0',
-  },
-  [phone_max]: {
-    padding: '20px',
-    paddingTop: '0',
-  }
-})
-
 const RootDIV = styled.div({
-  zIndex: '200',
+  zIndex: LEVEL_POPUP,
   width: '100%',
   height: '100%',
   position: 'fixed',
   top: '0',
   left: '0',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  background: 'rgba(0,0,0,0.5)',
 })
 
-const ContentDIV = styled.div({
+const Window = styled.div({
   borderRadius: '3px',
-  zIndex: '202',
-  padding: '0px',
-  maxWidth: '630px',
-  position: 'relative',
-  paddingTop: '0px',
-  paddingBottom: '0px',
-  margin: '0 auto',
-  display: 'block',
+  padding: '0',
   background: 'white',
-  textAlign: 'center',
-  [phablet_max]: {
-    width: '98%',
-  },
+  position: 'relative',
+  zIndex: LEVEL_POPUP + 1,
 })
 
 const CloseDIV = styled.div({
@@ -182,14 +198,27 @@ const CloseDIV = styled.div({
   }
 })
 
+const ContentDIV = styled.div({
+  padding: '30px',
+  paddingTop: '0',
+  [tablet_max]: {
+    padding: '25px',
+  },
+  [phablet_max]: {
+    padding: '20px',
+  },
+  [phone_max]: {
+    padding: '10px',
+  },
+})
+
 const BGDIV = styled.div({
   position: 'absolute',
-  zIndex: '201',
+  zIndex: LEVEL_POPUP,
   top: '0',
   left: '0',
   width: '100%',
   height: '100%',
-  background: 'rgba(0,0,0,0.5)',
 })
 
 const closeIconStyle = {
@@ -208,4 +237,10 @@ const CloseP = styled.p({
   fontWeight: 'bold',
   lineHeight: '26px',
   fontSize: '18px',
+})
+
+const Hidden = styled.div({
+  position: 'absolute',
+  opacity: '0',
+  pointerEvents: 'none',
 })
