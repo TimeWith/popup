@@ -38,7 +38,6 @@ class TWPopup extends Component {
     if (contentElement) {
       let closeHeight = 0
       if (closeElement) { closeHeight = closeElement.clientHeight }
-      if (closeElement) { console.log('FOUND CLOSE ELEMENT') }
       const currentContentHeight = contentElement.clientHeight
       const currentContentWidth = contentElement.clientWidth
       const windowMaxHeight = (currentContentHeight + closeHeight) > window.innerHeight ? window.innerHeight : (currentContentHeight + closeHeight)
@@ -70,7 +69,6 @@ class TWPopup extends Component {
   }
 
   renderClose = () => {
-    console.log('renderClose')
     return (
       <CloseDIV id='tw-popup-close-div' onClick={this.handleClosePopup}>
         <CloseP>close</CloseP>
@@ -80,18 +78,16 @@ class TWPopup extends Component {
   }
 
   render() {
-    const { active, content, disableClose } = this.props
-    console.log('disableClose:')
-    console.dir(disableClose)
+    const { active, content, disableClose, disablePadding, backgroundColor } = this.props
     if (!active || !content) { return null }
     setTimeout(() => this.adjustViewport(), 10)
     return (
-      <RootDIV id='tw-popup-root'>
+      <RootDIV id='tw-popup-root' backgroundColor={backgroundColor}>
         <Window id='tw-popup-window' style={{ maxWidth: this.state.windowMaxWidth, maxHeight: this.state.windowMaxHeight }}>
           { !disableClose && this.renderClose() }
           <Scrollbars
             style={{ height: this.state.scrollerHeight, width: this.state.scrollerWidth }}>
-            <ContentDIV>
+            <ContentDIV disablePadding={disablePadding}>
               { content }
             </ContentDIV>
           </Scrollbars>
@@ -108,12 +104,16 @@ class TWPopup extends Component {
   }
 }
 
-export const showPopup = function(content, disableClose) {
+const defaultBackgroundColor = 'rgba(0,0,0,0.5)'
+
+export const showPopup = function(popupData) {
   return {
     type: 'SHOW_POPUP',
     active: true,
-    content: content,
-    disableClose: disableClose,
+    content: popupData.content,
+    disableClose: popupData.disableClose,
+    disablePadding: popupData.disablePadding,
+    backgroundColor: popupData.backgroundColor ? popupData.backgroundColor : defaultBackgroundColor,
   }
 }
 export const closePopup = function() {
@@ -127,6 +127,8 @@ export function popupReducer(state = {
   content: null,
   active: false,
   disableClose: false,
+  disablePadding: false,
+  backgroundColor: defaultBackgroundColor,
 }, action) {
   switch (action.type) {
     case 'SHOW_POPUP': {
@@ -136,6 +138,8 @@ export function popupReducer(state = {
         active: true,
         content: action.content,
         disableClose: action.disableClose,
+        disablePadding: action.disablePadding,
+        backgroundColor: action.backgroundColor,
       };
     }
     case 'CLOSE_POPUP': {
@@ -144,6 +148,8 @@ export function popupReducer(state = {
         ...state,
         active: false,
         disableClose: false,
+        disablePadding: false,
+        backgroundColor: defaultBackgroundColor,
       };
     }
     default:
@@ -158,6 +164,7 @@ const mapStoreToProps = ( store ) => {
     active: store.popupReducer.active,
     content: store.popupReducer.content,
     disableClose: store.popupReducer.disableClose,
+    disablePadding: store.popupReducer.disablePadding,
   }
 }
 
@@ -169,8 +176,7 @@ const mapDispatchToProps = dispatch => {
 
 export default connect( mapStoreToProps, mapDispatchToProps )( TWPopup )
 
-
-const RootDIV = styled.div({
+const RootDIV = styled.div(props => ({
   zIndex: LEVEL_POPUP,
   width: '100%',
   height: '100%',
@@ -180,8 +186,8 @@ const RootDIV = styled.div({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  background: 'rgba(0,0,0,0.5)',
-})
+  background: props.backgroundColor ? props.backgroundColor : 'rgba(0,0,0,0.5)',
+}))
 
 const Window = styled.div({
   borderRadius: '3px',
@@ -206,18 +212,18 @@ const CloseDIV = styled.div({
   }
 })
 
-const ContentDIV = styled.div({
-  padding: '30px',
+const ContentDIV = styled.div(props => ({
+  padding: props.disablePadding ? '0' : '30px',
   [tablet_max]: {
-    padding: '25px',
+    padding: props.disablePadding ? '0' : '25px',
   },
   [phablet_max]: {
-    padding: '20px',
+    padding: props.disablePadding ? '0' : '20px',
   },
   [phone_max]: {
-    padding: '20px 10px',
+    padding: props.disablePadding ? '0' : '20px 10px',
   },
-})
+}))
 
 const BGDIV = styled.div({
   position: 'absolute',
