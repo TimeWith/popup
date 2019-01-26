@@ -165,6 +165,7 @@ const mapStoreToProps = ( store ) => {
     content: store.popupReducer.content,
     disableClose: store.popupReducer.disableClose,
     disablePadding: store.popupReducer.disablePadding,
+    backgroundColor: store.popupReducer.backgroundColor,
   }
 }
 
