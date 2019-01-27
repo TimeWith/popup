@@ -11,13 +11,38 @@ class TWPopup extends Component {
   constructor(props) {
     super(props)
     this.state = {
+      active: false,
+      content: null,
       initialized: false,
+      disableClose: false,
+      disablePadding: false,
       contentHeight: null,
       contentWidth: null,
       windowMaxHeight: null,
       windowMaxWidth: null,
       scrollerHeight: null,
       scrollerWidth: null,
+    }
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.content && !this.state.active) {
+      this.setState((state) => ({
+        active: true,
+        content: this.props.content,
+        initialized: false,
+        disableClose: this.props.disableClose,
+        disablePadding: this.props.disablePadding,
+      }));
+      setTimeout(() => this.adjustViewport(), 100)
+    } else if (!this.props.content && this.state.active) {
+      this.setState((state) => ({
+        active: false,
+        content: null,
+        initialized: false,
+        disableClose: null,
+        disablePadding: null,
+      }));
     }
   }
 
@@ -33,15 +58,16 @@ class TWPopup extends Component {
   }
 
   adjustViewport = () => {
-    const { disableClose } = this.props
     let update = false
-    const contentElement = document.getElementById('tw-popup-hidden-content')
-    const closeElement = document.getElementById('tw-popup-close-div')
-    if (contentElement) {
+    const closeElement = document.getElementById('tw-popup-close-element')
+    const hiddenElement = document.getElementById('tw-popup-hidden-element')
+    if (hiddenElement) {
       let closeHeight = 0
-      if (!disableClose) { closeHeight = closeElement.clientHeight }
-      const currentContentHeight = contentElement.clientHeight
-      const currentContentWidth = contentElement.clientWidth
+      if (closeElement) { 
+        closeHeight = closeElement.clientHeight 
+      }
+      const currentContentHeight = hiddenElement.clientHeight
+      const currentContentWidth = hiddenElement.clientWidth
       const windowMaxHeight = (currentContentHeight + closeHeight) > window.innerHeight ? window.innerHeight : (currentContentHeight + closeHeight)
       const windowMaxWidth = currentContentWidth > window.innerWidth ? window.innerWidth : 'auto'
       const scrollerHeight = (currentContentHeight + closeHeight) > window.innerHeight ? (window.innerHeight - closeHeight) : currentContentHeight
@@ -73,38 +99,69 @@ class TWPopup extends Component {
 
   renderClose = () => {
     return (
-      <CloseDIV id='tw-popup-close-div' onClick={this.handleClosePopup}>
+      <CloseDIV onClick={this.handleClosePopup} id='tw-popup-close-element'>
         <CloseP>close</CloseP>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512" style={closeIconStyle}><path d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"/></svg>
       </CloseDIV>
     )
   }
 
-  render() {
-    const { active, content, disableClose, disablePadding, backgroundColor } = this.props
-    const { initialized, scrollerHeight, scrollerWidth } = this.state
-    if (!active || !content) { return null }
-    setTimeout(() => this.adjustViewport(), 100)
+  renderEmpty = () => {
+    return (
+      <div id='tw-popup-root-empty'>
+      </div>
+    )
+  }
+
+  renderHiddenElement = () => {
+    const {
+      content,
+      disableClose,
+      disablePadding
+    } = this.state
+    return (
+      <Hidden id='tw-popup-hidden-element'>
+        { !disableClose && this.renderClose() }
+        <ContentDIV disablePadding={disablePadding}>
+          { content }
+        </ContentDIV>
+      </Hidden>
+    )
+  }
+
+  renderPostInitialization = () => {
+    const {
+      content,
+      scrollerHeight,
+      scrollerWidth,
+      disableClose,
+      disablePadding,
+      backgroundColor
+    } = this.state
     return (
       <RootDIV id='tw-popup-root' backgroundColor={backgroundColor}>
-        { initialized &&
-          <Window id='tw-popup-window' style={{ maxWidth: this.state.windowMaxWidth, maxHeight: this.state.windowMaxHeight }}>
-            { !disableClose && this.renderClose() }
-            <Scrollbars style={{ height: scrollerHeight, width: scrollerWidth }}>
-              <ContentDIV disablePadding={disablePadding}>
-                { content }
-              </ContentDIV>
-            </Scrollbars>
-          </Window>
-        }
-        <BGDIV onClick={this.handleClosePopup} interactive={!disableClose}></BGDIV>
-        <Hidden id='tw-popup-hidden-content'>
+        <Window id='tw-popup-window' style={{ maxWidth: this.state.windowMaxWidth, maxHeight: this.state.windowMaxHeight }}>
           { !disableClose && this.renderClose() }
-          <ContentDIV disablePadding={disablePadding}>
-            { content }
-          </ContentDIV>
-        </Hidden>
+          <Scrollbars style={{ height: scrollerHeight, width: scrollerWidth }}>
+            <ContentDIV disablePadding={disablePadding}>
+              { content }
+            </ContentDIV>
+          </Scrollbars>
+        </Window>
+        <BGDIV onClick={this.handleClosePopup} interactive={!disableClose}></BGDIV>
       </RootDIV>
+    )
+  }
+
+  render() {
+    const { active, content, initialized } = this.state
+    if (!active) { return this.renderEmpty() }
+    if (!content) { return this.renderEmpty() }
+    return (
+      <div>
+        { initialized ? this.renderPostInitialization() : null }
+        { content ? this.renderHiddenElement() : null }
+      </div>
     )
   }
 }
@@ -114,7 +171,6 @@ const defaultBackgroundColor = 'rgba(0,0,0,0.5)'
 export const showPopup = function(popupData) {
   return {
     type: 'SHOW_POPUP',
-    active: true,
     content: popupData.content,
     disableClose: popupData.disableClose,
     disablePadding: popupData.disablePadding,
@@ -124,13 +180,11 @@ export const showPopup = function(popupData) {
 export const closePopup = function() {
   return {
     type: 'CLOSE_POPUP',
-    active: false,
   }
 }
 
 export function popupReducer(state = {
   content: null,
-  active: false,
   disableClose: false,
   disablePadding: false,
   backgroundColor: defaultBackgroundColor,
@@ -140,7 +194,6 @@ export function popupReducer(state = {
       document.documentElement.style.overflow = 'hidden'
       return {
         ...state,
-        active: true,
         content: action.content,
         disableClose: action.disableClose,
         disablePadding: action.disablePadding,
@@ -151,7 +204,7 @@ export function popupReducer(state = {
       document.documentElement.style.overflow = 'auto'
       return {
         ...state,
-        active: false,
+        content: null,
         disableClose: false,
         disablePadding: false,
         backgroundColor: defaultBackgroundColor,
@@ -166,7 +219,6 @@ export function popupReducer(state = {
 
 const mapStoreToProps = ( store ) => {
   return {
-    active: store.popupReducer.active,
     content: store.popupReducer.content,
     disableClose: store.popupReducer.disableClose,
     disablePadding: store.popupReducer.disablePadding,
