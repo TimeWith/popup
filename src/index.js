@@ -11,6 +11,7 @@ class TWPopup extends Component {
   constructor(props) {
     super(props)
     this.state = {
+      initialized: false,
       contentHeight: null,
       contentWidth: null,
       windowMaxHeight: null,
@@ -51,6 +52,7 @@ class TWPopup extends Component {
 
       if (update) {
         this.setState({
+          initialized: true,
           windowMaxHeight: windowMaxHeight,
           windowMaxWidth: windowMaxWidth,
           contentHeight: currentContentHeight,
@@ -65,7 +67,6 @@ class TWPopup extends Component {
   componentDidMount() {
     window.addEventListener('resize', this.adjustViewport)
     window.addEventListener('scroll', this.handleScroll)
-    setTimeout(() => this.adjustViewport(), 100)
     // TWPopup never unmounts
   }
 
@@ -79,19 +80,22 @@ class TWPopup extends Component {
   }
 
   render() {
-    const { active, content, disableClose, disablePadding, backgroundColor } = this.props
+    const { initialized, active, content, disableClose, disablePadding, backgroundColor } = this.props
     if (!active || !content) { return null }
+    setTimeout(() => this.adjustViewport(), 100)
     return (
       <RootDIV id='tw-popup-root' backgroundColor={backgroundColor}>
-        <Window id='tw-popup-window' style={{ maxWidth: this.state.windowMaxWidth, maxHeight: this.state.windowMaxHeight }}>
-          { !disableClose && this.renderClose() }
-          <Scrollbars
-            style={{ height: this.state.scrollerHeight, width: this.state.scrollerWidth }}>
-            <ContentDIV disablePadding={disablePadding}>
-              { content }
-            </ContentDIV>
-          </Scrollbars>
-        </Window>
+        { initialized &&
+          <Window id='tw-popup-window' style={{ maxWidth: this.state.windowMaxWidth, maxHeight: this.state.windowMaxHeight }}>
+            { !disableClose && this.renderClose() }
+            <Scrollbars
+              style={{ height: this.state.scrollerHeight, width: this.state.scrollerWidth }}>
+              <ContentDIV disablePadding={disablePadding}>
+                { content }
+              </ContentDIV>
+            </Scrollbars>
+          </Window>
+        }
         <BGDIV onClick={this.handleClosePopup} interactive={!disableClose}></BGDIV>
         <Hidden id='tw-popup-hidden-content'>
           { !disableClose && this.renderClose() }

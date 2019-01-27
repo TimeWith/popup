@@ -1,6 +1,6 @@
 {
   "name": "@time-with/popup",
-  "version": "1.5.13",
+  "version": "1.5.14",
   "description": "React redux-driven Popup system",
   "main": "dist/index.js",
   "license": "MIT",
