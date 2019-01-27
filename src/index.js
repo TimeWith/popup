@@ -20,10 +20,6 @@ class TWPopup extends Component {
     }
   }
 
-  componentDidMount() {
-    this.adjustViewport()
-  }
-
   handleClosePopup = () => {
     if (!this.props.disableClose) {
       this.props.closePopup()
@@ -69,6 +65,7 @@ class TWPopup extends Component {
   componentDidMount() {
     window.addEventListener('resize', this.adjustViewport)
     window.addEventListener('scroll', this.handleScroll)
+    this.adjustViewport()
     // TWPopup never unmounts
   }
 
