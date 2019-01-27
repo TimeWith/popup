@@ -6,43 +6,43 @@ import { bindActionCreators } from 'redux';
 import { tablet_max, phablet_max, phone_max } from '@time-with/media-queries'
 import { Scrollbars } from 'react-custom-scrollbars'
 
+const initialStatae = {
+  active: false,
+  content: null,
+  initialized: false,
+  disableClose: false,
+  disablePadding: false,
+  contentHeight: null,
+  contentWidth: null,
+  windowMaxHeight: null,
+  windowMaxWidth: null,
+  scrollerHeight: null,
+  scrollerWidth: null,
+}
 class TWPopup extends Component {
 
   constructor(props) {
     super(props)
-    this.state = {
-      active: false,
-      content: null,
-      initialized: false,
-      disableClose: false,
-      disablePadding: false,
-      contentHeight: null,
-      contentWidth: null,
-      windowMaxHeight: null,
-      windowMaxWidth: null,
-      scrollerHeight: null,
-      scrollerWidth: null,
-    }
+    this.state = initialStatae
   }
 
   componentDidUpdate(prevProps) {
-    if (this.props.content && !this.state.active) {
-      this.setState((state) => ({
-        active: true,
-        content: this.props.content,
-        initialized: false,
-        disableClose: this.props.disableClose,
-        disablePadding: this.props.disablePadding,
-      }));
-      setTimeout(() => this.adjustViewport(), 100)
-    } else if (!this.props.content && this.state.active) {
-      this.setState((state) => ({
-        active: false,
-        content: null,
-        initialized: false,
-        disableClose: null,
-        disablePadding: null,
-      }));
+    if (this.props.content) { // if has content
+      if (!this.state.active) { // if is not active
+        // set active
+        this.setState({
+          active: true,
+          content: this.props.content,
+          initialized: false,
+          disableClose: this.props.disableClose,
+          disablePadding: this.props.disablePadding,
+        });
+      }    
+    } else { // if has no content
+      if (this.state.active) { // if is active
+        // set inactive
+        this.setState(initialStatae);
+      }
     }
   }
 
@@ -61,6 +61,7 @@ class TWPopup extends Component {
     let update = false
     const closeElement = document.getElementById('tw-popup-close-element')
     const hiddenElement = document.getElementById('tw-popup-hidden-element')
+    console.dir(hiddenElement)
     if (hiddenElement) {
       let closeHeight = 0
       if (closeElement) { 
@@ -77,7 +78,7 @@ class TWPopup extends Component {
       || this.state.contentHeight !== currentContentHeight
       || this.state.contentWidth !== currentContentWidth) { update = true }
 
-      if (update) {
+      if (update || !this.state.initialized) {
         this.setState({
           initialized: true,
           windowMaxHeight: windowMaxHeight,
@@ -108,8 +109,7 @@ class TWPopup extends Component {
 
   renderEmpty = () => {
     return (
-      <div id='tw-popup-root-empty'>
-      </div>
+      <div id='tw-popup-empty' style={{position: 'fixed'}}></div>
     )
   }
 
@@ -139,7 +139,7 @@ class TWPopup extends Component {
       backgroundColor
     } = this.state
     return (
-      <RootDIV id='tw-popup-root' backgroundColor={backgroundColor}>
+      <BackgroundDiv id='tw-popup-background' backgroundColor={backgroundColor}>
         <Window id='tw-popup-window' style={{ maxWidth: this.state.windowMaxWidth, maxHeight: this.state.windowMaxHeight }}>
           { !disableClose && this.renderClose() }
           <Scrollbars style={{ height: scrollerHeight, width: scrollerWidth }}>
@@ -149,7 +149,7 @@ class TWPopup extends Component {
           </Scrollbars>
         </Window>
         <BGDIV onClick={this.handleClosePopup} interactive={!disableClose}></BGDIV>
-      </RootDIV>
+      </BackgroundDiv>
     )
   }
 
@@ -157,11 +157,14 @@ class TWPopup extends Component {
     const { active, content, initialized } = this.state
     if (!active) { return this.renderEmpty() }
     if (!content) { return this.renderEmpty() }
+    if (active && content || !initialized) { 
+      setTimeout(() => this.adjustViewport(), 100) 
+    }
     return (
-      <div>
-        { initialized ? this.renderPostInitialization() : null }
+      <RootDiv id='tw-popup-root'>
         { content ? this.renderHiddenElement() : null }
-      </div>
+        { initialized ? this.renderPostInitialization() : null }
+      </RootDiv>
     )
   }
 }
@@ -191,7 +194,7 @@ export function popupReducer(state = {
 }, action) {
   switch (action.type) {
     case 'SHOW_POPUP': {
-      document.documentElement.style.overflow = 'hidden'
+      document.documentElement.style.overflowY = 'hidden'
       return {
         ...state,
         content: action.content,
@@ -201,7 +204,7 @@ export function popupReducer(state = {
       };
     }
     case 'CLOSE_POPUP': {
-      document.documentElement.style.overflow = 'auto'
+      document.documentElement.style.overflowY = 'scroll'
       return {
         ...state,
         content: null,
@@ -234,8 +237,15 @@ const mapDispatchToProps = dispatch => {
 
 export default connect( mapStoreToProps, mapDispatchToProps )( TWPopup )
 
-const RootDIV = styled.div(props => ({
+const RootDiv = styled.div({
   zIndex: LEVEL_POPUP,
+  position: 'fixed',
+  top: '0',
+  left: '0',
+})
+
+const BackgroundDiv = styled.div(props => ({
+  zIndex: LEVEL_POPUP + 1,
   width: '100%',
   height: '100%',
   position: 'fixed',
