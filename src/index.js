@@ -20,6 +20,10 @@ class TWPopup extends Component {
     }
   }
 
+  componentDidMount() {
+    this.adjustViewport()
+  }
+
   handleClosePopup = () => {
     if (!this.props.disableClose) {
       this.props.closePopup()
@@ -80,7 +84,6 @@ class TWPopup extends Component {
   render() {
     const { active, content, disableClose, disablePadding, backgroundColor } = this.props
     if (!active || !content) { return null }
-    setTimeout(() => this.adjustViewport(), 10)
     return (
       <RootDIV id='tw-popup-root' backgroundColor={backgroundColor}>
         <Window id='tw-popup-window' style={{ maxWidth: this.state.windowMaxWidth, maxHeight: this.state.windowMaxHeight }}>
