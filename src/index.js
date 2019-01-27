@@ -6,7 +6,7 @@ import { bindActionCreators } from 'redux';
 import { tablet_max, phablet_max, phone_max } from '@time-with/media-queries'
 import { Scrollbars } from 'react-custom-scrollbars'
 
-const initialStatae = {
+const initialState = {
   active: false,
   content: null,
   initialized: false,
@@ -18,12 +18,13 @@ const initialStatae = {
   windowMaxWidth: null,
   scrollerHeight: null,
   scrollerWidth: null,
+  refreshInterval: null,
 }
 class TWPopup extends Component {
 
   constructor(props) {
     super(props)
-    this.state = initialStatae
+    this.state = initialState
   }
 
   componentDidUpdate(prevProps) {
@@ -36,13 +37,22 @@ class TWPopup extends Component {
           initialized: false,
           disableClose: this.props.disableClose,
           disablePadding: this.props.disablePadding,
+          refreshInterval: setInterval(this.refreshViewport, 200)
         });
       }    
     } else { // if has no content
       if (this.state.active) { // if is active
         // set inactive
-        this.setState(initialStatae);
+        clearInterval(this.state.refreshInterval)
+        this.setState(initialState);
       }
+    }
+  }
+
+  refreshViewport = () => {
+    const { active, initialized } = this.state
+    if (active && initialized) {
+      this.adjustViewport()
     }
   }
 
