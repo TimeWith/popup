@@ -65,7 +65,7 @@ class TWPopup extends Component {
   componentDidMount() {
     window.addEventListener('resize', this.adjustViewport)
     window.addEventListener('scroll', this.handleScroll)
-    this.adjustViewport()
+    setTimeout(() => this.adjustViewport(), 100)
     // TWPopup never unmounts
   }
 
