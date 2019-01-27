@@ -33,12 +33,13 @@ class TWPopup extends Component {
   }
 
   adjustViewport = () => {
+    const { disableClose } = this.props
     let update = false
     const contentElement = document.getElementById('tw-popup-hidden-content')
     const closeElement = document.getElementById('tw-popup-close-div')
     if (contentElement) {
       let closeHeight = 0
-      if (closeElement) { closeHeight = closeElement.clientHeight }
+      if (!disableClose) { closeHeight = closeElement.clientHeight }
       const currentContentHeight = contentElement.clientHeight
       const currentContentWidth = contentElement.clientWidth
       const windowMaxHeight = (currentContentHeight + closeHeight) > window.innerHeight ? window.innerHeight : (currentContentHeight + closeHeight)
@@ -80,7 +81,8 @@ class TWPopup extends Component {
   }
 
   render() {
-    const { initialized, active, content, disableClose, disablePadding, backgroundColor } = this.props
+    const { active, content, disableClose, disablePadding, backgroundColor } = this.props
+    const { initialized, scrollerHeight, scrollerWidth } = this.state
     if (!active || !content) { return null }
     setTimeout(() => this.adjustViewport(), 100)
     return (
@@ -88,8 +90,7 @@ class TWPopup extends Component {
         { initialized &&
           <Window id='tw-popup-window' style={{ maxWidth: this.state.windowMaxWidth, maxHeight: this.state.windowMaxHeight }}>
             { !disableClose && this.renderClose() }
-            <Scrollbars
-              style={{ height: this.state.scrollerHeight, width: this.state.scrollerWidth }}>
+            <Scrollbars style={{ height: scrollerHeight, width: scrollerWidth }}>
               <ContentDIV disablePadding={disablePadding}>
                 { content }
               </ContentDIV>
@@ -99,7 +100,7 @@ class TWPopup extends Component {
         <BGDIV onClick={this.handleClosePopup} interactive={!disableClose}></BGDIV>
         <Hidden id='tw-popup-hidden-content'>
           { !disableClose && this.renderClose() }
-          <ContentDIV>
+          <ContentDIV disablePadding={disablePadding}>
             { content }
           </ContentDIV>
         </Hidden>
