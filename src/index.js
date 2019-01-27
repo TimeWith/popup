@@ -61,7 +61,6 @@ class TWPopup extends Component {
     let update = false
     const closeElement = document.getElementById('tw-popup-close-element')
     const hiddenElement = document.getElementById('tw-popup-hidden-element')
-    console.dir(hiddenElement)
     if (hiddenElement) {
       let closeHeight = 0
       if (closeElement) { 
