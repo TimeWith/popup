@@ -1,25 +1,24 @@
 import React, { Component } from 'react'
-import styled from 'react-emotion'
-import { LEVEL_POPUP } from 'app-levels'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux';
-import { tablet_max, phablet_max, phone_max } from '@time-with/media-queries'
-import { Scrollbars } from 'react-custom-scrollbars'
+import {
+  RootDiv,
+  BackgroundDiv,
+  Window,
+  CloseDIV,
+  ContentDIV,
+  BGDIV,
+  closeIconStyle,
+  CloseP
+} from './elements'
 
 const initialState = {
   active: false,
   content: null,
-  initialized: false,
   disableClose: false,
   disablePadding: false,
-  contentHeight: null,
-  contentWidth: null,
-  windowMaxHeight: null,
-  windowMaxWidth: null,
-  scrollerHeight: null,
-  scrollerWidth: null,
-  refreshInterval: null,
 }
+
 class TWPopup extends Component {
 
   constructor(props) {
@@ -30,29 +29,14 @@ class TWPopup extends Component {
   componentDidUpdate(prevProps) {
     if (this.props.content) { // if has content
       if (!this.state.active) { // if is not active
-        // set active
+        // set active if there is content
         this.setState({
           active: true,
           content: this.props.content,
-          initialized: false,
           disableClose: this.props.disableClose,
           disablePadding: this.props.disablePadding,
-          refreshInterval: setInterval(this.refreshViewport, 200)
         });
       }    
-    } else { // if has no content
-      if (this.state.active) { // if is active
-        // set inactive
-        clearInterval(this.state.refreshInterval)
-        this.setState(initialState);
-      }
-    }
-  }
-
-  refreshViewport = () => {
-    const { active, initialized } = this.state
-    if (active && initialized) {
-      this.adjustViewport()
     }
   }
 
@@ -60,51 +44,6 @@ class TWPopup extends Component {
     if (!this.props.disableClose) {
       this.props.closePopup()
     }
-  }
-
-  handleScroll = (e) => {
-    e.stopPropagation()
-    e.preventDefault()
-  }
-
-  adjustViewport = () => {
-    let update = false
-    const closeElement = document.getElementById('tw-popup-close-element')
-    const hiddenElement = document.getElementById('tw-popup-hidden-element')
-    if (hiddenElement) {
-      let closeHeight = 0
-      if (closeElement) { 
-        closeHeight = closeElement.clientHeight 
-      }
-      const currentContentHeight = hiddenElement.clientHeight
-      const currentContentWidth = hiddenElement.clientWidth
-      const windowMaxHeight = (currentContentHeight + closeHeight) > window.innerHeight ? window.innerHeight : (currentContentHeight + closeHeight)
-      const windowMaxWidth = currentContentWidth > window.innerWidth ? window.innerWidth : 'auto'
-      const scrollerHeight = (currentContentHeight + closeHeight) > window.innerHeight ? (window.innerHeight - closeHeight) : currentContentHeight
-      const scrollerWidth = currentContentWidth > window.innerWidth ? window.innerWidth : currentContentWidth
-      if (this.state.windowMaxHeight !== windowMaxHeight
-      || this.state.windowMaxWidth !== windowMaxWidth
-      || this.state.contentHeight !== currentContentHeight
-      || this.state.contentWidth !== currentContentWidth) { update = true }
-
-      if (update || !this.state.initialized) {
-        this.setState({
-          initialized: true,
-          windowMaxHeight: windowMaxHeight,
-          windowMaxWidth: windowMaxWidth,
-          contentHeight: currentContentHeight,
-          contentWidth: currentContentWidth,
-          scrollerHeight: scrollerHeight,
-          scrollerWidth: scrollerWidth,
-        })
-      }
-    }
-  }
-
-  componentDidMount() {
-    window.addEventListener('resize', this.adjustViewport)
-    window.addEventListener('scroll', this.handleScroll)
-    // TWPopup never unmounts
   }
 
   renderClose = () => {
@@ -122,40 +61,20 @@ class TWPopup extends Component {
     )
   }
 
-  renderHiddenElement = () => {
+  renderContent = () => {
     const {
       content,
-      disableClose,
-      disablePadding
-    } = this.state
-    return (
-      <Hidden id='tw-popup-hidden-element'>
-        { !disableClose && this.renderClose() }
-        <ContentDIV disablePadding={disablePadding}>
-          { content }
-        </ContentDIV>
-      </Hidden>
-    )
-  }
-
-  renderPostInitialization = () => {
-    const {
-      content,
-      scrollerHeight,
-      scrollerWidth,
       disableClose,
       disablePadding,
       backgroundColor
     } = this.state
     return (
       <BackgroundDiv id='tw-popup-background' backgroundColor={backgroundColor}>
-        <Window id='tw-popup-window' style={{ maxWidth: this.state.windowMaxWidth, maxHeight: this.state.windowMaxHeight }}>
+        <Window id='tw-popup-window'>
           { !disableClose && this.renderClose() }
-          <Scrollbars style={{ height: scrollerHeight, width: scrollerWidth }}>
-            <ContentDIV disablePadding={disablePadding}>
-              { content }
-            </ContentDIV>
-          </Scrollbars>
+          <ContentDIV disablePadding={disablePadding}>
+            { content }
+          </ContentDIV>
         </Window>
         <BGDIV onClick={this.handleClosePopup} interactive={!disableClose}></BGDIV>
       </BackgroundDiv>
@@ -163,16 +82,13 @@ class TWPopup extends Component {
   }
 
   render() {
-    const { active, content, initialized } = this.state
+    const { active, content } = this.state
     if (!active) { return this.renderEmpty() }
     if (!content) { return this.renderEmpty() }
-    if (active && content || !initialized) { 
-      setTimeout(() => this.adjustViewport(), 100) 
-    }
+
     return (
       <RootDiv id='tw-popup-root'>
-        { content ? this.renderHiddenElement() : null }
-        { initialized ? this.renderPostInitialization() : null }
+        { this.renderContent() }
       </RootDiv>
     )
   }
@@ -245,92 +161,3 @@ const mapDispatchToProps = dispatch => {
 };
 
 export default connect( mapStoreToProps, mapDispatchToProps )( TWPopup )
-
-const RootDiv = styled.div({
-  zIndex: LEVEL_POPUP,
-  position: 'fixed',
-  top: '0',
-  left: '0',
-})
-
-const BackgroundDiv = styled.div(props => ({
-  zIndex: LEVEL_POPUP + 1,
-  width: '100%',
-  height: '100%',
-  position: 'fixed',
-  top: '0',
-  left: '0',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  background: props.backgroundColor ? props.backgroundColor : 'rgba(0,0,0,0.5)',
-}))
-
-const Window = styled.div({
-  borderRadius: '3px',
-  padding: '0',
-  background: 'white',
-  position: 'relative',
-  zIndex: LEVEL_POPUP + 1,
-})
-
-const CloseDIV = styled.div({
-  cursor: 'pointer',
-  width: '100%',
-  textAlign: 'right',
-  paddingRight: '7px',
-  paddingTop: '7px',
-  '& .svg-inline--fa': {
-    marginLeft: '10px',
-    marginRight: '10px',
-    marginTop: '1px',
-    color: '#63C1E8',
-    fontSize: '26px',
-  }
-})
-
-const ContentDIV = styled.div(props => ({
-  padding: props.disablePadding ? '0' : '30px',
-  [tablet_max]: {
-    padding: props.disablePadding ? '0' : '25px',
-  },
-  [phablet_max]: {
-    padding: props.disablePadding ? '0' : '20px',
-  },
-  [phone_max]: {
-    padding: props.disablePadding ? '0' : '20px 10px',
-  },
-}))
-
-const BGDIV = styled.div({
-  position: 'absolute',
-  zIndex: LEVEL_POPUP,
-  top: '0',
-  left: '0',
-  width: '100%',
-  height: '100%',
-})
-
-const closeIconStyle = {
-  display: 'inline-block',
-  verticalAlign: 'top',
-  height: '24px',
-  marginLeft: '10px',
-  marginRight: '5px',
-  marginTop: '2px',
-  fill: '#63C1E8',
-}
-
-const CloseP = styled.p({
-  display: 'inline-block',
-  verticalAlign: 'top',
-  fontWeight: 'bold',
-  lineHeight: '26px',
-  fontSize: '18px',
-})
-
-const Hidden = styled.div({
-  position: 'absolute',
-  opacity: '0',
-  pointerEvents: 'none',
-})
