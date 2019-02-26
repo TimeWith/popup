@@ -12,11 +12,14 @@ import {
   CloseP
 } from './elements'
 
+const defaultBackgroundColor = 'rgba(0,0,0,0.5)'
+
 const initialState = {
   active: false,
   content: null,
   disableClose: false,
   disablePadding: false,
+  backgroundColor: defaultBackgroundColor,
 }
 
 class TWPopup extends Component {
@@ -35,8 +38,18 @@ class TWPopup extends Component {
           content: this.props.content,
           disableClose: this.props.disableClose,
           disablePadding: this.props.disablePadding,
+          backgroundColor: this.props.backgroundColor ? this.props.backgroundColor : defaultBackgroundColor,
         });
       }    
+    } else {
+      if (this.state.active) { // if is not active
+        this.setState({
+          active: false,
+          disableClose: false,
+          disablePadding: false,
+          backgroundColor: defaultBackgroundColor,
+        });
+      }
     }
   }
 
@@ -85,7 +98,6 @@ class TWPopup extends Component {
     const { active, content } = this.state
     if (!active) { return this.renderEmpty() }
     if (!content) { return this.renderEmpty() }
-
     return (
       <RootDiv id='tw-popup-root'>
         { this.renderContent() }
@@ -93,8 +105,6 @@ class TWPopup extends Component {
     )
   }
 }
-
-const defaultBackgroundColor = 'rgba(0,0,0,0.5)'
 
 export const showPopup = function(popupData) {
   return {
