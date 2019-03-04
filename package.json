@@ -1,6 +1,6 @@
 {
   "name": "@time-with/popup",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "React redux-driven Popup system",
   "main": "dist/index.js",
   "license": "MIT",
@@ -9,21 +9,23 @@
     "prepack": "yarn && babel src --out-dir dist --source-maps --presets es2015,stage-0,react && rm -rf node_modules",
     "postpack": "rm -rf node_modules"
   },
-  "dependencies": {
+  "devDependencies": {
+    "babel-plugin-emotion": "^10.0.7",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-react": "^6.24.1",
+    "babel-preset-stage-0": "^6.24.1"
+  },
+  "peerDependencies": {
+    "@emotion/core": "^10.0.7",
+    "@emotion/styled": "^10.0.7",
     "@fortawesome/fontawesome": "^1.1.8",
     "@fortawesome/fontawesome-svg-core": "^1.2.0",
     "@fortawesome/react-fontawesome": "^0.1.0",
     "@time-with/media-queries": "^1.0.3",
     "app-levels": "^1.0.5",
-    "babel-plugin-emotion": "^9.2.6",
     "emotion": "^9.2.6",
     "react": "^16.1.1",
     "react-emotion": "^9.2.6",
     "react-redux": "^5.0.6"
-  },
-  "devDependencies": {
-    "babel-preset-es2015": "^6.24.1",
-    "babel-preset-react": "^6.24.1",
-    "babel-preset-stage-0": "^6.24.1"
   }
 }
