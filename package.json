@@ -1,6 +1,6 @@
 {
   "name": "@time-with/popup",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "React redux-driven Popup system",
   "main": "dist/index.js",
   "license": "MIT",
@@ -24,7 +24,6 @@
     "@time-with/media-queries": "^1.0.3",
     "app-levels": "^1.0.5",
     "react": "^16.1.1",
-    "react-emotion": "^10.0.0",
     "react-redux": "^5.0.6"
   }
 }

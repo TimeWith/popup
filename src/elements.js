@@ -1,4 +1,4 @@
-import styled from 'react-emotion'
+import styled from '@emotion/styled'
 import { LEVEL_POPUP } from 'app-levels'
 import { tablet_max, phablet_max, phone_max } from '@time-with/media-queries'
 
